@@ -1,3 +1,6 @@
 [submodule "cream-cast"]
 	path = cream-cast
 	url = https://github.com/dmeckers/cream-cast
+[submodule "cream-soap"]
+	path = cream-soap
+	url = https://github.com/dmeckers/cream-soap.git
