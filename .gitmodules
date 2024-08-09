@@ -4,3 +4,6 @@
 [submodule "cream-soap"]
 	path = cream-soap
 	url = https://github.com/dmeckers/cream-soap.git
+[submodule "cream-api"]
+	path = cream-api
+	url = https://github.com/dmeckers/cream-api.git
