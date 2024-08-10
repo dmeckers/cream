@@ -7,3 +7,6 @@
 [submodule "cream-api"]
 	path = cream-api
 	url = https://github.com/dmeckers/cream-api.git
+[submodule "cream-tg"]
+	path = cream-tg
+	url = https://github.com/dmeckers/cream-tg.git

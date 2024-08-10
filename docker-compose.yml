@@ -1,0 +1,115 @@
+version: "3.8"
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    # environment:
+    #   REDIS_PASSWORD: redispass
+    ports:
+      - 6379:6379
+    networks:
+      - cream-net
+    user: redis
+
+  cream-db:
+    container_name: cream-db
+    hostname: cream-db
+    image: postgres:13
+    volumes:
+      - ./cream-db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=cream
+      - POSTGRES_PASSWORD=cream
+      - POSTGRES_DB=cream
+    ports:
+      - 5432:5432
+    networks:
+      - cream-net
+
+  cream-storage:
+    image: minio/minio
+    container_name: cream-storage
+    hostname: cream-storage
+    volumes:
+      - ./cream-storage-data:/data
+    ports:
+      - "9000:9000"
+    environment:
+      - MINIO_ACCESS_KEY=creamcream
+      - MINIO_SECRET_KEY=creamcream
+    networks:
+      - cream-net
+    command: server /data
+
+  cream-api:
+    container_name: cream-api
+    build:
+      context: ./cream-api
+      dockerfile: Dockerfile
+    volumes:
+      - ./cream-api:/app
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=cream-db
+      - DB_PORT=5432
+      - DB_DATABASE=cream
+      - DB_USERNAME=cream
+      - DB_PASSWORD=cream
+      - REDIS_PASSWORD=
+      - REDIS_CLIENT=phpredis
+      - REDIS_HOST=redis
+    ports:
+      - 8000:8000
+      - 443:443
+      - 2015:2015
+    depends_on:
+      - cream-db
+      - cream-storage
+      - redis
+    networks:
+      - cream-net
+
+  cream-soap:
+    container_name: cream-soap
+    build:
+      context: ./cream-soap
+      dockerfile: Dockerfile
+    working_dir: /home/liquidsoap
+    volumes:
+      - ./cream-soap/config:/home/liquidsoap/config
+      - ./cream-soap/content:/home/liquidsoap/content
+    environment:
+      - ICECAST_ADMIN_PASSWORD=hackme
+      - MEDIA_PROVIDER_API_URL=https://cream-api:443
+    # entrypoint: liquidsoap
+    # command: /home/liquidsoap/config/radio.liq
+    ports:
+      - 1234:1234
+      - 8002:8002
+
+  cream-cast:
+    container_name: cream-cast
+    build:
+      context: ./cream-cast
+      dockerfile: Dockerfile
+    volumes:
+      - ./cream-cast/config:/home/icecast/config
+      - ./cream-cast/log:/home/icecast/log
+      - ./cream-cast/docker-entrypoint.sh:/home/icecast/docker-entrypoint.sh
+    environment:
+      - ICECAST_LOCATION=Universe
+      - ICECAST_ADMIN_PASSWORD=hackme
+      - ICECAST_HOSTNAME=cream.stream.io
+      - ICECAST_RELAY_SERVER=cream.stream.io
+    entrypoint: /home/icecast/docker-entrypoint.sh
+    command: "-c /home/icecast/config/icecast.xml"
+    depends_on:
+      - cream-api
+    ports:
+      - 8001:8001
+    networks:
+      - cream-net
+
+networks:
+  cream-net:
+    driver: bridge

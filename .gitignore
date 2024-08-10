@@ -43,3 +43,5 @@ Thumbs.db
 /channels/*
 
 mysql_data/
+cream-db/
+cream-storage-data/
