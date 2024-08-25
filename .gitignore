@@ -47,3 +47,4 @@ cream-db/
 cream-storage-data/
 *.rdb
 cream-redis/
+*.key

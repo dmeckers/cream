@@ -1,8 +1,8 @@
 version: "3.8"
 services:
-  redis:
+  cream-redis:
     image: redis:alpine
-    container_name: redis
+    container_name: cream-redis
     # environment:
     #   REDIS_PASSWORD: redispass
     ports:
@@ -33,21 +33,24 @@ services:
     volumes:
       - ./cream-storage-data:/data
     ports:
-      - "9000:9000"
+      - "9001:9001"
     environment:
       - MINIO_ACCESS_KEY=creamcream
       - MINIO_SECRET_KEY=creamcream
     networks:
       - cream-net
-    command: server /data
+    command: server --address :9001 /data
 
   cream-api:
     container_name: cream-api
     build:
       context: ./cream-api
-      dockerfile: Dockerfile
+      dockerfile: ./docker/Dockerfile
     volumes:
       - ./cream-api:/app
+      - ./cream-api/Caddyfile:/etc/caddy/Caddyfile
+      - ./selfsigned.crt:/etc/caddy/certs/selfsigned.crt
+      - ./selfsigned.key:/etc/caddy/certs/selfsigned.key
     environment:
       - DB_CONNECTION=pgsql
       - DB_HOST=cream-db
@@ -55,9 +58,18 @@ services:
       - DB_DATABASE=cream
       - DB_USERNAME=cream
       - DB_PASSWORD=cream
+      - SANCTUM_STATEFUL_DOMAINS=192.168.156.7:3000,localhost,cream-tg,cream-tg:3000,cream-tg:3005
       - REDIS_PASSWORD=
       - REDIS_CLIENT=phpredis
-      - REDIS_HOST=redis
+      - REDIS_HOST=cream-redis
+      - MINIO_ACCESS_KEY=creamcream
+      - MINIO_SECRET_KEY=creamcream
+      - MINIO_REGION=us-east-1
+      - MINIO_BUCKET=cream
+      - MINIO_ENDPOINT=cream-storage
+      - MINIO_USE_PATH_STYLE_ENDPOINT=true
+      - MINIO_URL=http://cream-storage
+
     ports:
       - 8000:8000
       - 443:443
@@ -65,7 +77,7 @@ services:
     depends_on:
       - cream-db
       - cream-storage
-      - redis
+      - cream-redis
     networks:
       - cream-net
 
@@ -83,6 +95,8 @@ services:
       - MEDIA_PROVIDER_API_URL=https://cream-api:443
     # entrypoint: liquidsoap
     # command: /home/liquidsoap/config/radio.liq
+    networks:
+      - cream-net
     ports:
       - 1234:1234
       - 8002:8002
@@ -109,6 +123,27 @@ services:
       - 8001:8001
     networks:
       - cream-net
+
+  cream-tg:
+    container_name: cream-tg
+    hostname: cream-tg
+    environment:
+      TEST_CHANNEL_BUCKET: bibaboba
+      RTMP_URL: rtmp://localhost/live/stream
+      BOT_TOKEN: 6738750247:AAFCQm5dtyF4gH1vjU949yth5FEUk9zvYgs
+      BOT_SUPERADMIN_ID: 1003323271
+    build:
+      context: ./cream-tg
+      dockerfile: ./docker/Dockerfile-dev
+    ports:
+      - 3005:3000
+    networks:
+      - cream-net
+    volumes:
+      - ./cream-tg:/app
+      - ./selfsigned.crt:/app/selfsigned.crt
+    depends_on:
+      - cream-api
 
 networks:
   cream-net:
