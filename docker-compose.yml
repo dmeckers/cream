@@ -25,13 +25,10 @@ services:
       - 5432:5432
     networks:
       - cream-net
-
   cream-storage:
     image: minio/minio
     container_name: cream-storage
     hostname: cream-storage
-    volumes:
-      - ./cream-storage-data:/data
     ports:
       - "9001:9001"
     environment:
@@ -130,7 +127,6 @@ services:
     environment:
       TEST_CHANNEL_BUCKET: bibaboba
       RTMP_URL: rtmp://localhost/live/stream
-      BOT_TOKEN: 6738750247:AAFCQm5dtyF4gH1vjU949yth5FEUk9zvYgs
       BOT_SUPERADMIN_ID: 1003323271
     build:
       context: ./cream-tg
