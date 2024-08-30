@@ -3,6 +3,7 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+*.local.yml
 # Dependency directories
 /.pnp/
 .pnp.js
