@@ -11,4 +11,10 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_WORKER_USERNAME }}
           password: ${{ secrets.SSH_WORKER_PASSWORD }}
-          script: whoami
+          script:
+            # Commands to be executed on the remote server
+            rm -rf cream
+            git clone https://github.com/dmeckers/cream
+            cd cream
+            git submodule update --init --recursive
+            docker-compose up -d
