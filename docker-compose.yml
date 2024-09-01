@@ -42,6 +42,18 @@ services:
       - ./cream-storage-data:/data
     command: server --address :9001 /data
 
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - cream-storage
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://cream-storage:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
+      /usr/bin/mc mb myminio/cream;
+      /usr/bin/mc policy download myminio/cream;
+      exit 0;
+      "
+
   cream-api:
     container_name: cream-api
     build:
@@ -51,6 +63,7 @@ services:
       - ./cream-api/Caddyfile:/etc/caddy/Caddyfile
       - ./selfsigned.crt:/etc/caddy/certs/selfsigned.crt
       - ./selfsigned.key:/etc/caddy/certs/selfsigned.key
+      - ./certs:/etc/caddy/certs/cream-fm.art
     environment:
       - DB_CONNECTION=${DB_CONNECTION}
       - DB_HOST=${DB_HOST}
@@ -71,6 +84,7 @@ services:
       - AWS_USE_PATH_STYLE_ENDPOINT=${AWS_USE_PATH_STYLE_ENDPOINT}
       - FILESYSTEM_PUBLIC_DRIVER=${FILESYSTEM_PUBLIC_DRIVER}
       - FILESYSTEM_DISK=${FILESYSTEM_DISK}
+      - SERVER_NAME=${SERVER_NAME}
     ports:
       - 8000:8000
       - 443:443
@@ -117,8 +131,6 @@ services:
       - ICECAST_ADMIN_PASSWORD=${ICECAST_ADMIN_PASSWORD}
       - ICECAST_HOSTNAME=${ICECAST_HOSTNAME}
       - ICECAST_RELAY_SERVER=${ICECAST_RELAY_SERVER}
-    entrypoint: /home/icecast/docker-entrypoint.sh
-    command: "-c /home/icecast/config/icecast.xml"
     depends_on:
       - cream-api
     ports:
@@ -134,6 +146,7 @@ services:
       - RTMP_URL=${RTMP_URL}
       - BOT_SUPERADMIN_ID=${BOT_SUPERADMIN_ID}
       - BOT_TOKEN=${BOT_TOKEN}
+      - JWT_TOKEN=${JWT_TOKEN}
       - WEB_APP_URL=${WEB_APP_URL}
     build:
       context: ./cream-tg

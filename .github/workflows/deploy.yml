@@ -79,7 +79,9 @@ jobs:
             RTMP_URL=${{secrets.RTMP_URL}}
             BOT_SUPERADMIN_ID=${{secrets.BOT_SUPERADMIN_ID}}
             BOT_TOKEN=${{secrets.BOT_TOKEN}}
-            WEB_APP_URL=http://cream-fm.art
+
+            WEB_APP_URL=https://dmeckers.github.io/cream-front/
+            SERVER_NAME=https://cream-fm.art
             EOF
 
             echo "Running Docker Compose..."
