@@ -135,6 +135,7 @@ services:
       - RTMP_URL=${RTMP_URL}
       - BOT_SUPERADMIN_ID=${BOT_SUPERADMIN_ID}
       - BOT_TOKEN=${BOT_TOKEN}
+      - WEB_APP_URL=${WEB_APP_URL}
     build:
       context: ./cream-tg
       dockerfile: ./docker/Dockerfile-dev
