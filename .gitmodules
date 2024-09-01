@@ -10,3 +10,6 @@
 [submodule "cream-tg"]
 	path = cream-tg
 	url = https://github.com/dmeckers/cream-tg.git
+[submodule "cream-front"]
+	path = cream-front
+	url = https://github.com/dmeckers/cream-front.git

@@ -25,6 +25,7 @@ services:
       - 5432:5432
     networks:
       - cream-net
+
   cream-storage:
     image: minio/minio
     container_name: cream-storage
@@ -34,8 +35,11 @@ services:
     environment:
       - MINIO_ACCESS_KEY=creamcream
       - MINIO_SECRET_KEY=creamcream
+      - MINIO_REGION=us-east-1
     networks:
       - cream-net
+    volumes:
+      - ./cream-storage-data:/data
     command: server --address :9001 /data
 
   cream-api:
@@ -59,14 +63,15 @@ services:
       - REDIS_PASSWORD=
       - REDIS_CLIENT=phpredis
       - REDIS_HOST=cream-redis
-      - MINIO_ACCESS_KEY=creamcream
-      - MINIO_SECRET_KEY=creamcream
-      - MINIO_REGION=us-east-1
-      - MINIO_BUCKET=cream
-      - MINIO_ENDPOINT=cream-storage
-      - MINIO_USE_PATH_STYLE_ENDPOINT=true
-      - MINIO_URL=http://cream-storage
-
+      - AWS_ACCESS_KEY_ID=creamcream
+      - AWS_SECRET_ACCESS_KEY=creamcream
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_BUCKET=cream
+      - AWS_ENDPOINT=http://cream-storage:9001
+      - AWS_URL=http://cream-storage:9001
+      - AWS_USE_PATH_STYLE_ENDPOINT=true
+      - FILESYSTEM_PUBLIC_DRIVER=s3
+      - FILESYSTEM_DISK=s3
     ports:
       - 8000:8000
       - 443:443
@@ -89,9 +94,9 @@ services:
       - ./cream-soap/content:/home/liquidsoap/content
     environment:
       - ICECAST_ADMIN_PASSWORD=hackme
-      - MEDIA_PROVIDER_API_URL=https://cream-api:443
-    # entrypoint: liquidsoap
-    # command: /home/liquidsoap/config/radio.liq
+      - ICECAST_HOSTNAME=http://cream-cast
+    entrypoint: liquidsoap
+    command: /home/liquidsoap/config/main.liq
     networks:
       - cream-net
     ports:
@@ -110,14 +115,14 @@ services:
     environment:
       - ICECAST_LOCATION=Universe
       - ICECAST_ADMIN_PASSWORD=hackme
-      - ICECAST_HOSTNAME=cream.stream.io
-      - ICECAST_RELAY_SERVER=cream.stream.io
+      - ICECAST_HOSTNAME=cream-cast:8004
+      - ICECAST_RELAY_SERVER=cream-cast:8004
     entrypoint: /home/icecast/docker-entrypoint.sh
     command: "-c /home/icecast/config/icecast.xml"
     depends_on:
       - cream-api
     ports:
-      - 8001:8001
+      - 8004:8004
     networks:
       - cream-net
 
