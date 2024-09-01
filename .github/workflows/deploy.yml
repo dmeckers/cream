@@ -43,7 +43,47 @@ jobs:
             git submodule update --init --recursive
             git submodule foreach git pull origin main
 
-
+            echo "Creating .env file..."
+            cat <<EOF > .env
+            APP_KEY=${{secrets.LARAVEL_APP_KEY}}
+            POSTGRES_USER=cream
+            POSTGRES_PASSWORD=cream
+            POSTGRES_DB=cream
+            MINIO_ACCESS_KEY=creamcream
+            MINIO_SECRET_KEY=creamcream
+            MINIO_REGION=us-east-1
+            DB_CONNECTION=pgsql
+            DB_HOST=cream-db
+            DB_PORT=5432
+            DB_DATABASE=cream
+            DB_USERNAME=cream
+            DB_PASSWORD=cream
+            SANCTUM_STATEFUL_DOMAINS=cream-fm.art,cream-tg,cream-tg:3000,cream-tg:3005
+            REDIS_PASSWORD=
+            REDIS_CLIENT=phpredis
+            REDIS_HOST=cream-redis
+            AWS_ACCESS_KEY_ID=creamcream
+            AWS_SECRET_ACCESS_KEY=creamcream
+            AWS_DEFAULT_REGION=us-east-1
+            AWS_BUCKET=cream
+            AWS_ENDPOINT=http://cream-storage:9001
+            AWS_URL=http://cream-storage:9001
+            AWS_USE_PATH_STYLE_ENDPOINT=true
+            FILESYSTEM_PUBLIC_DRIVER=s3
+            FILESYSTEM_DISK=s3
+            ICECAST_ADMIN_PASSWORD=hackme
+            ICECAST_HOSTNAME=http://cream-cast
+            ICECAST_LOCATION=Universe
+            ICECAST_RELAY_SERVER=cream-cast:8004
+            TEST_CHANNEL_BUCKET=bibaboba
+            RTMP_URL=rtmp://localhost/live/stream
+            BOT_SUPERADMIN_ID=1003323271
+            BOT_TOKEN=7468206761:AAFCZvROqy1uhVlNsdv3SDh5rABn1TwEz9E
+            EOF
 
             echo "Running Docker Compose..."
             docker-compose up -d --build
+
+            # Delete the .env file
+            echo "Deleting .env file..."
+            rm .env

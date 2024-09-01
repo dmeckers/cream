@@ -18,9 +18,9 @@ services:
     volumes:
       - ./cream-db:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=cream
-      - POSTGRES_PASSWORD=cream
-      - POSTGRES_DB=cream
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - 5432:5432
     networks:
@@ -33,9 +33,9 @@ services:
     ports:
       - "9001:9001"
     environment:
-      - MINIO_ACCESS_KEY=creamcream
-      - MINIO_SECRET_KEY=creamcream
-      - MINIO_REGION=us-east-1
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_REGION=${MINIO_REGION}
     networks:
       - cream-net
     volumes:
@@ -53,28 +53,29 @@ services:
       - ./selfsigned.crt:/etc/caddy/certs/selfsigned.crt
       - ./selfsigned.key:/etc/caddy/certs/selfsigned.key
     environment:
-      - DB_CONNECTION=pgsql
-      - DB_HOST=cream-db
-      - DB_PORT=5432
-      - DB_DATABASE=cream
-      - DB_USERNAME=cream
-      - DB_PASSWORD=cream
-      - SANCTUM_STATEFUL_DOMAINS=192.168.156.7:3000,localhost,cream-tg,cream-tg:3000,cream-tg:3005
-      - REDIS_PASSWORD=
-      - REDIS_CLIENT=phpredis
-      - REDIS_HOST=cream-redis
-      - AWS_ACCESS_KEY_ID=creamcream
-      - AWS_SECRET_ACCESS_KEY=creamcream
-      - AWS_DEFAULT_REGION=us-east-1
-      - AWS_BUCKET=cream
-      - AWS_ENDPOINT=http://cream-storage:9001
-      - AWS_URL=http://cream-storage:9001
-      - AWS_USE_PATH_STYLE_ENDPOINT=true
-      - FILESYSTEM_PUBLIC_DRIVER=s3
-      - FILESYSTEM_DISK=s3
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SANCTUM_STATEFUL_DOMAINS=${SANCTUM_STATEFUL_DOMAINS}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_CLIENT=${REDIS_CLIENT}
+      - REDIS_HOST=${REDIS_HOST}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_BUCKET=${AWS_BUCKET}
+      - AWS_ENDPOINT=${AWS_ENDPOINT}
+      - AWS_URL=${AWS_URL}
+      - AWS_USE_PATH_STYLE_ENDPOINT=${AWS_USE_PATH_STYLE_ENDPOINT}
+      - FILESYSTEM_PUBLIC_DRIVER=${FILESYSTEM_PUBLIC_DRIVER}
+      - FILESYSTEM_DISK=${FILESYSTEM_DISK}
     ports:
       - 8000:8000
       - 443:443
+      - 80:80
       - 2015:2015
     depends_on:
       - cream-db
@@ -93,8 +94,8 @@ services:
       - ./cream-soap/config:/home/liquidsoap/config
       - ./cream-soap/content:/home/liquidsoap/content
     environment:
-      - ICECAST_ADMIN_PASSWORD=hackme
-      - ICECAST_HOSTNAME=http://cream-cast
+      - ICECAST_ADMIN_PASSWORD=${ICECAST_ADMIN_PASSWORD}
+      - ICECAST_HOSTNAME=${ICECAST_HOSTNAME}
     entrypoint: liquidsoap
     command: /home/liquidsoap/config/main.liq
     networks:
@@ -113,10 +114,10 @@ services:
       - ./cream-cast/log:/home/icecast/log
       - ./cream-cast/docker-entrypoint.sh:/home/icecast/docker-entrypoint.sh
     environment:
-      - ICECAST_LOCATION=Universe
-      - ICECAST_ADMIN_PASSWORD=hackme
-      - ICECAST_HOSTNAME=cream-cast:8004
-      - ICECAST_RELAY_SERVER=cream-cast:8004
+      - ICECAST_LOCATION=${ICECAST_LOCATION}
+      - ICECAST_ADMIN_PASSWORD=${ICECAST_ADMIN_PASSWORD}
+      - ICECAST_HOSTNAME=${ICECAST_HOSTNAME}
+      - ICECAST_RELAY_SERVER=${ICECAST_RELAY_SERVER}
     entrypoint: /home/icecast/docker-entrypoint.sh
     command: "-c /home/icecast/config/icecast.xml"
     depends_on:
@@ -130,9 +131,10 @@ services:
     container_name: cream-tg
     hostname: cream-tg
     environment:
-      TEST_CHANNEL_BUCKET: bibaboba
-      RTMP_URL: rtmp://localhost/live/stream
-      BOT_SUPERADMIN_ID: 1003323271
+      - TEST_CHANNEL_BUCKET=${TEST_CHANNEL_BUCKET}
+      - RTMP_URL=${RTMP_URL}
+      - BOT_SUPERADMIN_ID=${BOT_SUPERADMIN_ID}
+      - BOT_TOKEN=${BOT_TOKEN}
     build:
       context: ./cream-tg
       dockerfile: ./docker/Dockerfile-dev
