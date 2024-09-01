@@ -48,7 +48,6 @@ services:
       context: ./cream-api
       dockerfile: ./docker/Dockerfile
     volumes:
-      - ./cream-api:/app
       - ./cream-api/Caddyfile:/etc/caddy/Caddyfile
       - ./selfsigned.crt:/etc/caddy/certs/selfsigned.crt
       - ./selfsigned.key:/etc/caddy/certs/selfsigned.key
