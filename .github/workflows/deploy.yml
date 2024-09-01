@@ -11,10 +11,39 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_WORKER_USERNAME }}
           password: ${{ secrets.SSH_WORKER_PASSWORD }}
-          script:
-            # Commands to be executed on the remote server
-            rm -rf cream
+          script: |
+
+
+
+            echo "Stopping all running containers..."
+            docker stop $(docker ps -q)
+
+
+
+            echo "Pruning Docker system..."
+            docker system prune -af
+
+
+
+            DIRECTORY="cream"
+            if [ -d "$DIRECTORY" ]; then
+              echo "Removing existing 'cream' directory..."
+              rm -rf "$DIRECTORY"
+            fi
+
+
+
+            echo "Cloning the 'cream' repository..."
             git clone https://github.com/dmeckers/cream
+
+
+
             cd cream
+            echo "Initializing and updating submodules..."
             git submodule update --init --recursive
-            docker-compose up -d
+            git submodule foreach git pull origin main
+
+
+
+            echo "Running Docker Compose..."
+            docker-compose up -d --build
