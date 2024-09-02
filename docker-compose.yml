@@ -48,11 +48,13 @@ services:
       - cream-storage
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc config host add myminio http://cream-storage:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
+      /usr/bin/mc alias set myminio http://cream-storage:9001 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
       /usr/bin/mc mb myminio/cream;
-      /usr/bin/mc policy download myminio/cream;
+      /usr/bin/mc anonymous set public myminio/cream;
       exit 0;
       "
+    networks:
+      - cream-net
 
   cream-api:
     container_name: cream-api
