@@ -1,9 +1,104 @@
-name: remote ssh command
-on: [push]
+name: Deploy cream
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
 jobs:
-  build:
-    name: Build
+  deploy-staging:
+    if: github.ref == 'refs/heads/dev'
+    environment: staging
+    name: Deploy to staging
+
     runs-on: ubuntu-latest
+
+    steps:
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_WORKER_USERNAME }}
+          password: ${{ secrets.SSH_WORKER_PASSWORD }}
+          script: |
+
+            echo "Stopping all running containers..."
+            docker stop $(docker ps -q)
+
+            echo "Pruning Docker system..."
+            docker system prune -af
+
+            DIRECTORY="cream"
+            if [ -d "$DIRECTORY" ]; then
+              echo "Removing existing 'cream' directory..."
+              echo ${{ secrets.SSH_WORKER_PASSWORD }} | sudo -S rm -rf "$DIRECTORY"
+            fi
+
+            echo "Cloning the 'cream' repository..."
+            git clone --single-branch --branch dev https://github.com/dmeckers/cream
+
+            cd cream
+            echo "Initializing and updating submodules..."
+            git submodule update --init --recursive
+            git submodule foreach git pull origin main
+
+            echo "Creating .env file..."
+            cat <<EOF > .env
+            # secrets
+            APP_KEY=${{secrets.LARAVEL_APP_KEY}}
+            POSTGRES_USER=${{secrets.POSTGRES_USER}}
+            POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}}
+            POSTGRES_DB=${{secrets.POSTGRES_DB}}
+            MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY}}
+            MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY}}
+            MINIO_REGION=${{secrets.MINIO_REGION}}
+            DB_CONNECTION=${{secrets.DB_CONNECTION}}
+            DB_HOST=${{secrets.DB_HOST}}
+            DB_PORT=${{secrets.DB_PORT}}
+            DB_DATABASE=${{secrets.DB_DATABASE}}
+            DB_USERNAME=${{secrets.DB_USERNAME}}
+            DB_PASSWORD=${{secrets.DB_PASSWORD}}
+            REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}}
+            REDIS_CLIENT=${{secrets.REDIS_CLIENT}}
+            REDIS_HOST=${{secrets.REDIS_HOST}}
+            AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}}
+            AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}}
+            AWS_DEFAULT_REGION=${{secrets.AWS_DEFAULT_REGION}}
+            AWS_BUCKET=${{secrets.AWS_BUCKET}}
+            AWS_ENDPOINT=${{secrets.AWS_ENDPOINT}}
+            AWS_URL=${{secrets.AWS_URL}}
+            AWS_USE_PATH_STYLE_ENDPOINT=${{secrets.AWS_USE_PATH_STYLE_ENDPOINT}}
+            FILESYSTEM_PUBLIC_DRIVER=${{secrets.FILESYSTEM_PUBLIC_DRIVER}}
+            FILESYSTEM_DISK=${{secrets.FILESYSTEM_DISK}}
+            ICECAST_ADMIN_PASSWORD=${{secrets.ICECAST_ADMIN_PASSWORD}}
+            ICECAST_HOSTNAME=${{secrets.ICECAST_HOSTNAME}}
+            ICECAST_LOCATION=${{secrets.ICECAST_LOCATION}}
+            ICECAST_RELAY_SERVER=${{secrets.ICECAST_RELAY_SERVER}}
+            TEST_CHANNEL_BUCKET=${{secrets.TEST_CHANNEL_BUCKET}}
+            RTMP_URL=${{secrets.RTMP_URL}}
+            BOT_SUPERADMIN_ID=${{secrets.BOT_SUPERADMIN_ID}}
+            BOT_TOKEN=${{secrets.BOT_TOKEN}}
+            # vars
+            SANCTUM_STATEFUL_DOMAINS=${{vars.SANCTUM_STATEFUL_DOMAINS}}
+            WEB_APP_URL=${{vars.WEB_APP_URL}}
+            SERVER_NAME=${{vars.SERVER_NAME}}
+            REACT_APP_HOMEPAGE_STREAM_URL=${{vars.REACT_APP_HOMEPAGE_STREAM_URL}}
+            EOF
+
+            echo "Running Docker Compose..."
+            docker-compose -f docker-compose.dev.yml up -d --build
+
+            # Delete the .env file
+            echo "Deleting .env file..."
+            # rm .env
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
@@ -24,11 +119,10 @@ jobs:
             docker system prune -af
 
 
-
             DIRECTORY="cream"
             if [ -d "$DIRECTORY" ]; then
               echo "Removing existing 'cream' directory..."
-              rm -rf "$DIRECTORY"
+              echo ${{ secrets.SSH_WORKER_PASSWORD }} | sudo -S rm -rf "$DIRECTORY"
             fi
 
 

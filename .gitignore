@@ -14,7 +14,7 @@ minio_data/
 
 # Build output
 /dist/
-*.dev.yml
+*.local.yml
 # Environment variables
 .env
 .env.local
@@ -35,7 +35,7 @@ logs/
 # OS generated files
 .DS_Store
 Thumbs.db
-
+.env*
 # media
 *.mp3
 *.mp4
