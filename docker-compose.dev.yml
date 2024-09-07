@@ -142,8 +142,10 @@ services:
       - RTMP_URL=${RTMP_URL}
       - BOT_SUPERADMIN_ID=${BOT_SUPERADMIN_ID}
       - BOT_TOKEN=${BOT_TOKEN}
-      - JWT_TOKEN=${JWT_TOKEN}
       - WEB_APP_URL=${WEB_APP_URL}
+      - BOT_WORKER_EMAIL=${BOT_WORKER_EMAIL}
+      - BOT_WORKER_PASSWORD=${BOT_WORKER_PASSWORD}
+
     build:
       context: ./cream-tg
       dockerfile: ./docker/Dockerfile
