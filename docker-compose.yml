@@ -88,8 +88,6 @@ services:
       - SERVER_NAME=${SERVER_NAME}
     ports:
       - 8000:8000
-      - 443:443
-      - 80:80
       - 2015:2015
     depends_on:
       - cream-db
@@ -159,9 +157,44 @@ services:
       - cream-net
     volumes:
       - ./cream-tg:/app
-      - ./selfsigned.crt:/app/selfsigned.crt
     depends_on:
       - cream-api
+
+  cream-frontend:
+    container_name: cream-frontend
+    hostname: cream-frontend
+    build:
+      context: ./cream-frontend
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - 5173:5173
+    depends_on:
+      - cream-api
+    networks:
+      - cream-net
+
+  cream-nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: cream-nginx
+    volumes:
+      - ./nginx/entrypoint.sh:/entrypoint.sh
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: ["sh", "/entrypoint.sh"]
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - cream-net
+    depends_on:
+      - cream-api
+    environment:
+      - FRONT_INTERNAL_HOST_URL=http://cream-frontend:5173
+      - API_INTERNAL_HOST_URL=https://cream-api
+      - FRONT_HOST_URL=cream-dream.site
+      - API_HOST_URL=api.cream-dream.site
 
 networks:
   cream-net:

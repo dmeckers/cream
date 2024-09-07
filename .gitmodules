@@ -7,14 +7,14 @@
 	path = cream-soap
 	url = https://github.com/dmeckers/cream-soap.git
 [submodule "cream-api"]
-	branch = new
+	branch = dev
 	path = cream-api
 	url = https://github.com/dmeckers/cream-api.git
 [submodule "cream-tg"]
 	path = cream-tg
-	branch = py
+	branch = dev
 	url = https://github.com/dmeckers/cream-tg.git
-[submodule "cream-front"]
-	path = cream-front
-	branch = master
-	url = https://github.com/dmeckers/cream-front.git
+[submodule "cream-frontend"]
+	path = cream-frontend
+	branch = dev
+	url = https://github.com/dmeckers/cream-frontend.git

@@ -13,6 +13,7 @@ jobs:
     name: Deploy to staging
 
     runs-on: ubuntu-latest
+    timeout-minutes: 120
 
     steps:
       - name: executing remote ssh commands using password
@@ -41,7 +42,10 @@ jobs:
             cd cream
             echo "Initializing and updating submodules..."
             git submodule update --init --recursive
-            git submodule foreach git pull origin main
+
+            git submodule foreach -q 'branch="$(git config -f $toplevel/.gitmodules submodule.$name.branch)" && echo "\"cd $path/ && git checkout --quiet $branch && git pull --quiet\""'
+
+            cd ~/cream
 
             echo "Creating .env file..."
             cat <<EOF > .env
@@ -98,6 +102,7 @@ jobs:
 
     name: Deploy to production
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     environment: production
     steps:
       - name: executing remote ssh commands using password
@@ -108,16 +113,11 @@ jobs:
           password: ${{ secrets.SSH_WORKER_PASSWORD }}
           script: |
 
-
-
             echo "Stopping all running containers..."
             docker stop $(docker ps -q)
 
-
-
             echo "Pruning Docker system..."
             docker system prune -af
-
 
             DIRECTORY="cream"
             if [ -d "$DIRECTORY" ]; then
@@ -125,17 +125,18 @@ jobs:
               echo ${{ secrets.SSH_WORKER_PASSWORD }} | sudo -S rm -rf "$DIRECTORY"
             fi
 
-
-
             echo "Cloning the 'cream' repository..."
             git clone https://github.com/dmeckers/cream
 
-
-
             cd cream
             echo "Initializing and updating submodules..."
+
+
             git submodule update --init --recursive
-            git submodule foreach git pull origin main
+
+            git submodule foreach -q 'branch="$(git config -f $toplevel/.gitmodules submodule.$name.branch)" && echo "\"cd $path/ && git checkout --quiet $branch && git pull --quiet\""'
+
+            cd ~/cream
 
             echo "Creating .env file..."
             cat <<EOF > .env
