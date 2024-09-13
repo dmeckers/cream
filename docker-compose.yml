@@ -173,28 +173,28 @@ services:
     networks:
       - cream-net
 
-  cream-nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    container_name: cream-nginx
-    volumes:
-      - ./nginx/entrypoint.sh:/entrypoint.sh
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: ["sh", "/entrypoint.sh"]
-    ports:
-      - 80:80
-      - 443:443
-    networks:
-      - cream-net
-    depends_on:
-      - cream-api
-    environment:
-      - FRONT_INTERNAL_HOST_URL=http://cream-frontend:5173
-      - API_INTERNAL_HOST_URL=https://cream-api
-      - FRONT_HOST_URL=cream-dream.site
-      - API_HOST_URL=api.cream-dream.site
+  # cream-nginx:
+  #   build:
+  #     context: ./nginx
+  #     dockerfile: Dockerfile
+  #   container_name: cream-nginx
+  #   volumes:
+  #     - ./nginx/entrypoint.sh:/entrypoint.sh
+  #     - ./certbot/conf:/etc/letsencrypt
+  #     - ./certbot/www:/var/www/certbot
+  #   entrypoint: ["sh", "/entrypoint.sh"]
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   networks:
+  #     - cream-net
+  #   depends_on:
+  #     - cream-api
+  #   environment:
+  #     - FRONT_INTERNAL_HOST_URL=http://cream-frontend:5173
+  #     - API_INTERNAL_HOST_URL=https://cream-api
+  #     - FRONT_HOST_URL=cream-dream.site
+  #     - API_HOST_URL=api.cream-dream.site
 
 networks:
   cream-net:
